@@ -1,0 +1,23 @@
+---
+title: "Project_selection"
+author: ""
+output: ioslides_presentation
+date: '2022-06-10'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Which question do we want to answer?
+
+A big question!
+
+## So, which data are we using?
+
+- A cool dataset which contains this and this
+- And is about that 
+
+## How are we going to do that?
+
+Amazingly
