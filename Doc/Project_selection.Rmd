@@ -20,7 +20,17 @@ A big question!
 
 ## So, which data are we using?
 
-- A cool dataset which contains this and this
+- The cohort that has been selected for analysis is the TCGA Lung Adenocarcinoma (LUAD) gene expression RNASeq data and Phenotype data .
+
+These datasets were sourced from the University of California Santa Cruz DATASETS on the xenabrowser.net weebpage.  
+
+The phenotype datacontains 706 samples and 148 identifiers. 
+
+The expression subtypes in the phenotype data are :
+ + Magnoid
+ + Squamoid and 
+ + Bronchioid. 
+
 - And is about that 
 
 ## How are we going to do that?
