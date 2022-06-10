@@ -1,8 +1,13 @@
 ---
 title: "Project_selection"
-author: ""
-output: ioslides_presentation
+author: "Catrine Høm, Julie Zimmermann, Oriade Simpson and Paolo Federico"
 date: '2022-06-10'
+output:
+  ioslides_presentation:
+    widescreen: true
+    incremental: false
+    logo: DTU_logo.png
+    css: styles.css
 ---
 
 ```{r setup, include=FALSE}
