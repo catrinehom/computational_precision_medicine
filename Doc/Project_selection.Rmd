@@ -27,6 +27,8 @@ The cohort that has been selected for analysis is the **TCGA Lung Adenocarcinoma
 
 These datasets were sourced from the University of California Santa Cruz DATASETS on the xenabrowser.net webpage.  
 
+The RNASeq gene expression data contain 576 samples and 20,531 genes. 
+
 The phenotype data contain 706 samples and 148 identifiers. 
 
 The expression subtypes in the phenotype data are:
