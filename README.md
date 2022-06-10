@@ -15,7 +15,8 @@ Data
 
 
 The data contains X tables: 
-
+- Table 1
+- Table X
 
 The data is available in this repository under */data/\_raw*. 
 
@@ -35,13 +36,13 @@ Installation
 The following code download this data analysis pipeline, when run in the terminal:
 
 ```
-git clone https://github.com/rforbiodatascience/
+git clone https://github.com/catrinehom/computational_precision_medicine.git
 ```
 
 Usage
 --------------------
 
-
+This is how you use the code
 
 Group members
 --------------------
