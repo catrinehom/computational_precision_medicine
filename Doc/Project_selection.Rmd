@@ -40,3 +40,4 @@ The expression subtypes in the phenotype data are:
 ## How are we going to do that?
 
 Use machine learning methods such as K-Nearest Neighbours to find some clusters 
+Compare different classification methods such as support vector machine and ..
