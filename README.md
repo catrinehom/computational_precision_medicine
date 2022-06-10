@@ -47,6 +47,7 @@ Group members
 --------------------
 
 * Catrine Høm (catrinehom)
-* Julie Zimmermann
-* Irade
-* Paolo
+* Julie Zimmermann (julzim)
+* Oriade Simpson (s172084)
+* Paolo Federico (Drivahah)
+
