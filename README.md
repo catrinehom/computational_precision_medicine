@@ -3,7 +3,6 @@
 
 ![](./doc/supplementary_figs/00.readme_banner.png)
 
-test
 
 Description
 --------------------
@@ -28,7 +27,7 @@ Dependencies
 --------------------
 - [R](https://cran.r-project.org/bin/windows/base/) >= 3.6.3, including packages:
   * tidyverse
-  * XXX
+  * Melanoma
 
 
 Installation
