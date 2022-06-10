@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Which question do we want to answer?
 
-A big question!
+Does the gene expression signature predict the subtypes of Lung Adenocarcenoma?
+
 
 ## So, which data are we using?
 
