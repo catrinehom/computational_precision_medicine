@@ -16,23 +16,27 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Which question do we want to answer?
 
-A big question!
+Goal:  Defining the optimal gene signatures for sub-typing
 
-## So, which data are we using?
+Do the gene expression signatures predict the subtypes of Lung Adenocarcenoma?
 
-- The cohort that has been selected for analysis is the TCGA Lung Adenocarcinoma (LUAD) gene expression RNASeq data and Phenotype data .
 
-These datasets were sourced from the University of California Santa Cruz DATASETS on the xenabrowser.net weebpage.  
+## Which data are we using ?
 
-The phenotype datacontains 706 samples and 148 identifiers. 
+The cohort that has been selected for analysis is the **TCGA Lung Adenocarcinoma (LUAD)** gene expression RNASeq data and Phenotype data.
 
-The expression subtypes in the phenotype data are :
- + Magnoid
- + Squamoid and 
- + Bronchioid. 
+These datasets were sourced from the University of California Santa Cruz DATASETS on the xenabrowser.net webpage.  
 
-- And is about that 
+The phenotype data contain706 samples and 148 identifiers. 
+
+The expression subtypes in the phenotype data are:
+
+* Magnoid
+
+* Squamoid 
+
+* & Bronchioid
 
 ## How are we going to do that?
 
-Amazingly
+Use machine learning methods such as K-Nearest Neighbours to find some clusters 
