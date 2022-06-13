@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Which question do we want to answer?
 
-Goal:  Defining the optimal gene signatures for sub-typing
+Goal:  Defining the optimal gene signatures for sub-typing of the defined subtypes: Magnoid, Squamoid and Bronchioid.
 
 Do the gene expression signatures predict the subtypes of Lung Adenocarcenoma?
 
