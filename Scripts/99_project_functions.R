@@ -46,14 +46,35 @@ datadistribution_plot <- function(x, y, df){
                  width = 0.3)
 }
 
+# # Lollipop plot
+# lollipop_hor <- function(x, y, df){
+#   # Horizontal version
+#   ggplot(df, aes(x = .data[[x]],
+#                  y = .data[[y]])) +
+#     geom_segment(aes(x = .data[[x]],
+#                       xend = .data[[x]],
+#                       y = 0,
+#                       yend = .data[[y]]), 
+#                 color = "skyblue") +
+#     geom_point(color="blue", 
+#                size=4, 
+#                alpha=0.6) +
+#     theme_light() +
+#     coord_flip() +
+#     theme(
+#       panel.grid.major.y = element_blank(),
+#       panel.border = element_blank(),
+#       axis.ticks.y = element_blank()
+#     )
+# }
+
 # Save plots in images to plots folder in results 
 
-folder <- "results/plots"
+plots_folder <- "results/plots"
 
-if (file.exists(folder)) {
-  cat("The folder already exists")
+if (file.exists(plots_folder)) {
 } else {
-  dir.create(folder)
+  dir.create(plots_folder)
 }
 
 image_path = "results/plots"
