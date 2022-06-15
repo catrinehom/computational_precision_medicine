@@ -132,7 +132,8 @@ for (u in no_genes){
         class_centroid <- rowMeans(training[,training_classes==class])
         # add the mean vector to the centroids matrix
         centroids <- cbind(centroids, class_centroid)
-       }
+      }
+    
     # add colnames to the centroid matrix
     colnames(centroids) <- unique(lung_pheno$Expression_Subtype)
     # calculate the distance of the test sample to the centroids
