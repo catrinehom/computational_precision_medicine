@@ -48,12 +48,12 @@ signatures <- list()
 
 # Run the comparisons for each subtype
 for (i in unique(lung_pheno$Expression_Subtype)) {
-    pvals <- apply(lung_data, 1, FUN = row_mww)
-    padj <- p.adjust(pvals, method = "BY")
-    sig_probes <- rownames(lung_data)[padj<0.05]
-    subtype_sig <- lung_data[rownames(lung_data) %in% sig_probes,]
-    log2fc <- apply(subtype_sig, 1, FUN = row_fc)
-    signatures[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
+  pvals <- apply(lung_data, 1, FUN = row_mww)
+  padj <- p.adjust(pvals, method = "BY")
+  sig_probes <- rownames(lung_data)[padj<0.05]
+  subtype_sig <- lung_data[rownames(lung_data) %in% sig_probes,]
+  log2fc <- apply(subtype_sig, 1, FUN = row_fc)
+  signatures[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
 }
 
 # Find best number of genes in the signature
@@ -62,7 +62,7 @@ for (u in no_genes){
   signatures_up[["Bronchioid"]] <- signatures_up[["Bronchioid"]][1:u]
   signatures_up[["Magnoid"]] <- signatures_up[["Magnoid"]][1:u]
   signatures_up[["Squamoid"]] <- signatures_up[["Squamoid"]][1:u]
-    
+  
   print(cat("Now calcalated number of genes: ", u))
   
   #Define subgenes (across all subtypes) and subset the full dataset
@@ -127,13 +127,12 @@ for (u in no_genes){
     # make an empty centroid matrix
     centroids <- NULL
     # loop over each of the three classes
-      for (class in unique(lung_pheno$Expression_Subtype)) {
-        # for each of these classes, subset the training matrix to samples belonging to that class, and calculate the mean expression of each gene in the class
-        class_centroid <- rowMeans(training[,training_classes==class])
-        # add the mean vector to the centroids matrix
-        centroids <- cbind(centroids, class_centroid)
-      }
-    
+    for (class in unique(lung_pheno$Expression_Subtype)) {
+      # for each of these classes, subset the training matrix to samples belonging to that class, and calculate the mean expression of each gene in the class
+      class_centroid <- rowMeans(training[,training_classes==class])
+      # add the mean vector to the centroids matrix
+      centroids <- cbind(centroids, class_centroid)
+    }
     # add colnames to the centroid matrix
     colnames(centroids) <- unique(lung_pheno$Expression_Subtype)
     # calculate the distance of the test sample to the centroids
