@@ -6,27 +6,13 @@ library(ggplot2)
 # Load functions
 source(file = "Scripts/99_project_functions.R")
 
-## Load count data
-lung_data <- read.delim("Data/_raw/HiSeqV2-2", row.names=1)
-# Rename columns to fit pheno data
-colnames(lung_data) <- gsub(pattern = "\\.", replacement = "-", x = colnames(lung_data))
-colnames(raw) <- gsub(pattern = "\\.", replacement = "-", x = colnames(raw))
+# Load data ---------------------------------------------------------------
+lung_pheno <- read_tsv(file = "data/01_lung_pheno.tsv",
+                          show_col_types = FALSE)
+lung_data <- read_tsv(file = "data/01_lung_data.tsv",
+                       show_col_types = FALSE)
 
-#load pheno data
-pheno <- read.delim("Data/_raw/TCGA.LUAD.sampleMap-LUAD_clinicalMatrix",row.names=1)
-lung_pheno <- pheno
-lung_pheno <- lung_pheno[rownames(lung_pheno) %in% colnames(lung_data),]
-lung_pheno <- lung_pheno[match(colnames(lung_data), rownames(lung_pheno)),]
 
-#Clean data 
-table(rownames(lung_pheno)==colnames(lung_data))
-lung_data <- lung_data[, lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squamoid","Magnoid")]
-lung_data <- lung_data[ rowSums(lung_data != 0) > 0,]
-lung_pheno <- lung_pheno[lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squamoid","Magnoid"),]
-lung_data <- apply(lung_data, 2, function(x) x*1) 
-
-#Replace above with a direct loading of the datasets, after adding a 
-#function to save them in the previous part
 
 # Check for NAs --------------------------------------------------------
 NAs_pheno <- na_count(lung_pheno) 

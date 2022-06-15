@@ -9,6 +9,7 @@ if(!require('class')) {
   install.packages('class')
   library('class')
 }
+library(readr)
 
 # Load functions
 source(file = "Scripts/99_project_functions.R")
@@ -24,6 +25,7 @@ pheno <- read.delim("Data/_raw/TCGA.LUAD.sampleMap-LUAD_clinicalMatrix",row.name
 lung_pheno <- pheno
 lung_pheno <- lung_pheno[rownames(lung_pheno) %in% colnames(lung_data),]
 lung_pheno <- lung_pheno[match(colnames(lung_data), rownames(lung_pheno)),]
+remove(pheno) #Not used anymore
 
 #Clean data 
 table(rownames(lung_pheno)==colnames(lung_data))
@@ -31,6 +33,13 @@ lung_data <- lung_data[, lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squ
 lung_data <- lung_data[ rowSums(lung_data != 0) > 0,]
 lung_pheno <- lung_pheno[lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squamoid","Magnoid"),]
 lung_data <- apply(lung_data, 2, function(x) x*1) 
+
+# Write data --------------------------------------------------------------
+write_tsv(x = lung_pheno,
+          file = "Data/01_lung_pheno.tsv")
+
+write_tsv(x = as_tibble(lung_data),
+          file = "Data/01_lung_data.tsv")
 
 ##############################
 # Define Signatures
