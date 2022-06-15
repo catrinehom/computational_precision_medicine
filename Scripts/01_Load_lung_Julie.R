@@ -2,6 +2,13 @@
 library(ggplot2)
 library(GSVA)
 library(ComplexHeatmap)
+if(!require('class')) {
+  install.packages('class')
+  library('class')
+}
+
+# Load functions
+source(file = "Scripts/99_project_functions.R")
 
 ## Load data
 lung_data <- read.delim("Data/_raw/HiSeqV2-2", row.names=1)
@@ -46,21 +53,8 @@ ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
 
 probe_signatures_up <- list()
 
-# Make a function to do a MWW U test
-row_mww <- function(x) {
-  subtype <- x[lung_pheno$Expression_Subtype == i]
-  rest <- x[!lung_pheno$Expression_Subtype == i]
-  res <- wilcox.test(subtype, rest)
-  return(res$p.value)
-}
-# Make a function to calculate log2 fc
-row_fc <- function(x) {
-  subtype <- x[lung_pheno$Expression_Subtype == i]
-  rest <- x[!lung_pheno$Expression_Subtype == i]
-  res <- log2(median(subtype)/median(rest))
-  return(res)
-}
 # Run the comparisons for each CIT class
+for (u in seq(5,1000,by=5)){
 for (i in unique(lung_pheno$Expression_Subtype)) {
   pvals <- apply(lung_data, 1, FUN = row_mww)
   padj <- p.adjust(pvals, method = "BY")
@@ -80,7 +74,9 @@ Heatmap(scale(lung_data[rownames(lung_data) %in% unname(unlist(probe_signatures_
 enrichment <- gsva(lung_data,probe_signatures_up,method = "ssgsea", ssgsea.norm = FALSE)
 enrichment_subtypes <- rownames(enrichment)[apply(enrichment, 2, which.max)]
 
-table(lung_pheno$Expression_Subtype == rownames(enrichment)[apply(enrichment, 2, which.max)])
+answer_gssea <- table(lung_pheno$Expression_Subtype == rownames(enrichment)[apply(enrichment, 2, which.max)])
+
+answer_gssea["TRUE"]/(answer_gssea["FALSE"]+answer_gssea["TRUE"])
 
 ## PCA for subgenes
 sub_genes = unname(unlist(probe_signatures_up))
@@ -130,34 +126,55 @@ table(pred_vector)
 
 ## kNN
 ## Do a leave-one-out classification of CIT training samples using kNN
-if(!require('class')) {
-  install.packages('class')
-  library('class')
-}
 
 
 
-pred <- integer(ncol(lung_data_sub)-1)
+confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
+colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+rownames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
 
-for (k in 1:ncol(lung_data_sub)-1) {
+
+pred <- integer(ncol(lung_data_sub))
+
+for (k in 1:ncol(lung_data_sub)) {
   answers = integer(ncol(lung_data_sub))
-  for(i in 1:ncol(lung_data_sub)){
-    test_knn <- subset(lung_data_sub, select = c(i)) 
-    train_knn <- subset(lung_data_sub, select = -c(i)) 
+  test_k <-subset(lung_data_sub, select = c(k)) 
+  train_k <-subset(lung_data_sub, select = -c(k)) 
+  cl_k <- subset(t(lung_pheno$Expression_Subtype), select = -c(k)) 
+  
+  for(i in 1:ncol(train_k)){
+    test_knn <- subset(train_k, select = c(i)) 
+    train_knn <- subset(train_k, select = -c(i)) 
     
-    cl <- subset(t(lung_pheno$Expression_Subtype), select = -c(i)) 
+    cl <- cl_k[-i] 
     cl <- factor(t(cl))
     train_knn <- t(train_knn)
     test_knn <- t(test_knn)
     
     subtype_knn <- as.character(knn(train_knn, test_knn, cl, k = k, prob=TRUE))
     
+    #confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] +1 
+    
     answers[i] = subtype_knn == t(lung_pheno$Expression_Subtype[i])
     
   }
+  
+ # precition_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/rowSums(confusionmatrix)[1]
+ # precition_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/rowSums(confusionmatrix)[2]  
+ # precition_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/rowSums(confusionmatrix)[3]
+ # 
+ # recall_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/colSums(confusionmatrix)[1]
+ # recall_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/colSums(confusionmatrix)[2]  
+ # recall_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/colSums(confusionmatrix)[3]
+ # 
+ # cbind(precition_Bronchioid,precition_Magnoid,precition_Squamoid)
+ # cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
 
-pred[k] <- sum(answers/ncol(lung_data_sub))
+ pred[k] <- sum(answers/ncol(lung_data_sub))
+ 
+}
 
+subtype_knn <- as.character(knn(train_k, test_k, cl, k = k, prob=TRUE))
 }
 
 pred_k <-cbind(seq(1,275),pred)
