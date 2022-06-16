@@ -11,6 +11,7 @@ if(!require('class')) {
 }
 library(readr)
 library(tidyverse)
+library(rankdist)
 
 # Load functions
 source(file = "Scripts/99_project_functions.R")
