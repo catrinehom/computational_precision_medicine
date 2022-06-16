@@ -35,7 +35,11 @@ table(rownames(lung_pheno)==colnames(lung_data))
 lung_data <- lung_data[, lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squamoid","Magnoid")]
 lung_data <- lung_data[ rowSums(lung_data != 0) > 0,]
 lung_pheno <- lung_pheno[lung_pheno$Expression_Subtype %in% c("Bronchioid", "Squamoid","Magnoid"),]
-lung_data <- apply(lung_data, 2, function(x) x*1) 
+
+lung_data_remove_outliers <- lung_data[ , -which(names(lung_data) %in% c("TCGA-44-6147-01.1","TCGA-44-5645-01","TCGA-44-6146-01","TCGA-44-2662-01.1","TCGA-44-2666-01.1","TCGA-44-2656-01.1","TCGA-44-6775-01.1","TCGA-44-4112-01"))]
+lung_data_remove_outliers <- lung_data_remove_outliers[ rowSums(lung_data_remove_outliers != 0) > 0,]
+
+lung_pheno_remove_outliers <- lung_pheno[-which(row.names(lung_pheno) %in% c("TCGA-44-6147-01.1","TCGA-44-5645-01","TCGA-44-6146-01","TCGA-44-2662-01.1","TCGA-44-2666-01.1","TCGA-44-2656-01.1","TCGA-44-6775-01.1","TCGA-44-4112-01")),]
 
 # Write data --------------------------------------------------------------
 write_tsv(x = lung_pheno,
@@ -45,10 +49,35 @@ write_tsv(x = as_tibble(lung_data),
           file = "Data/01_lung_data.tsv")
 
 ##############################
+# Remove outliers
+##############################
+
+pca <- prcomp(t(lung_data), scale=TRUE)
+df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+df$condition <- lung_pheno$Expression_Subtype
+
+ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
+  geom_point()
+
+# We can see 8 patient being weird
+pca <- prcomp(t(lung_data_remove_outliers), scale=TRUE)
+df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+df$condition <- lung_pheno_remove_outliers$Expression_Subtype
+
+ggplot(df, aes(x = PC1, y = PC2,color=condition)) +
+  geom_point()
+
+
+lung_data <- lung_data_remove_outliers
+lung_data <- apply(lung_data, 2, function(x) x*1) 
+lung_pheno <- lung_pheno_remove_outliers
+
+##############################
 # Define Signatures
 ##############################
 # Define how many number of genes to test
-no_genes <- seq(5,1000,by=5)
+interval <- 2
+no_genes <- seq(2,20,by=interval)
 
 # Define empty pred vectors
 pred_gssea <- integer(length(no_genes))
@@ -56,7 +85,8 @@ pred_DTC <- integer(length(no_genes))
 pred_knn <- integer(length(no_genes))
 
 # Define empty gene signature list
-signatures <- list()
+signatures_all_up <- list()
+signatures_all_down <- list()
 
 # Run the comparisons for each subtype for upregulated
 for (i in unique(lung_pheno$Expression_Subtype)) {
@@ -65,22 +95,30 @@ for (i in unique(lung_pheno$Expression_Subtype)) {
   sig_probes <- rownames(lung_data)[padj<0.05]
   subtype_sig <- lung_data[rownames(lung_data) %in% sig_probes,]
   log2fc <- apply(subtype_sig, 1, FUN = row_fc)
-  signatures[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
+  signatures_all_up[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
+  signatures_all_down[[i]] <- names(log2fc[order(log2fc, decreasing = FALSE)])
 }
 
 # Rank count data
+lung_data_unranked <- lung_data
 lung_data <- apply(lung_data, 2, rank)
 
 # Find best number of genes in the signature
 for (u in no_genes){
-  signatures[["Bronchioid"]] <- signatures[["Bronchioid"]][1:u]
-  signatures[["Magnoid"]] <- signatures[["Magnoid"]][1:u]
-  signatures[["Squamoid"]] <- signatures[["Squamoid"]][1:u]
+  signatures_up <- signatures_all_up
+  signatures_up[["Bronchioid"]] <- signatures_all_up[["Bronchioid"]][1:u]
+  signatures_up[["Magnoid"]] <- signatures_all_up[["Magnoid"]][1:u]
+  signatures_up[["Squamoid"]] <- signatures_all_up[["Squamoid"]][1:u]
+  
+  signatures_down <- signatures_all_down
+  signatures_down[["Bronchioid"]] <- signatures_all_down[["Bronchioid"]][1:u]
+  signatures_down[["Magnoid"]] <- signatures_all_down[["Magnoid"]][1:u]
+  signatures_down[["Squamoid"]] <- signatures_all_down[["Squamoid"]][1:u]
   
   print(cat("Now calcalated number of genes: ", u))
   
   #Define subgenes (across all subtypes) and subset the full dataset
-  sub_genes <- unname(unlist(signatures))
+  sub_genes <- unname(c(unlist(signatures_up),unlist(signatures_down)))
   lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
   
   ##############################
@@ -90,16 +128,22 @@ for (u in no_genes){
   ###############
   # SSGEA
   ###############
-  # Find score for each signature in each sample
-  enrichment <- gsva(lung_data_sub,signatures,method = "ssgsea", ssgsea.norm = FALSE)
+  # Find score for each up signature in each sample
+  enrichment <- gsva(lung_data,signatures_up,method = "ssgsea", ssgsea.norm = FALSE)
+  # Find score for each down signature in each sample
+  detraction <- gsva(lung_data,signatures_down,method = "ssgsea", ssgsea.norm = FALSE)
+  detraction <- detraction *-1
+  
+  total <- enrichment + detraction
+  
   # Find the highest signature score for each sample
-  enrichment_subtypes <- rownames(enrichment)[apply(enrichment, 2, which.max)]
+  enrichment_subtypes <- rownames(total)[apply(total, 2, which.max)]
   
   # answer_dtc is for all samples for a specific u
   answer_gssea <- table(lung_pheno$Expression_Subtype == rownames(enrichment)[apply(enrichment, 2, which.max)])
   
   # Remember this score for next loop
-  pred_gssea[u/5] <- answer_gssea["TRUE"]/(answer_gssea["FALSE"]+answer_gssea["TRUE"])
+  pred_gssea[u/interval] <- answer_gssea["TRUE"]/(answer_gssea["FALSE"]+answer_gssea["TRUE"])
   
   ###############
   # KNN
@@ -115,12 +159,12 @@ for (u in no_genes){
     train_knn <- t(train_knn)
     test_knn <- t(test_knn)
     
-    subtype_knn <- as.character(knn(train_knn, test_knn, cl, k = 10, prob=TRUE))
+    subtype_knn <- as.character(knn(train_knn, test_knn, cl, k = 17, prob=TRUE))
     answer_knn[i] = subtype_knn == t(lung_pheno$Expression_Subtype[i])
     
   }
   # Remember this score for next loop
-  pred_knn[u/5] <- sum(answer_knn/ncol(lung_data_sub))
+  pred_knn[u/interval] <- sum(answer_knn/ncol(lung_data_sub))
   
   ###############
   # DTC
@@ -150,7 +194,7 @@ for (u in no_genes){
     # add colnames to the centroid matrix
     colnames(centroids) <- unique(lung_pheno$Expression_Subtype)
     # calculate the distance of the test sample to the centroids
-    d <- as.matrix(dist(t(cbind(centroids, test))))
+    d <- as.matrix(dist(t(cbind(centroids, test)),method="canberra"))
     # assign the class of the closest centroid
     class_pred <- names(which.min(d[1:3,4]))
     # check if you got it right and make a logical vector
@@ -159,13 +203,13 @@ for (u in no_genes){
   # check how many of the cases you got it right
   answer_dtc <-table(answer_dtc)
   # Remember this score for next loop
-  pred_DTC[u/5] <- answer_dtc["TRUE"]/(answer_dtc["FALSE"]+answer_dtc["TRUE"])
+  pred_DTC[u/interval] <- answer_dtc["TRUE"]/(answer_dtc["FALSE"]+answer_dtc["TRUE"])
 }
 
 ##############################
 # Prediction value of models
 ##############################
-
+no_genes<-no_genes*2
 #Combine pred score from the three models
 prediction <-cbind(no_genes,pred_DTC,pred_knn,pred_gssea)
 colnames(prediction) <- c("#genes","DTC","kNN","GSSEA")
@@ -173,6 +217,13 @@ colnames(prediction) <- c("#genes","DTC","kNN","GSSEA")
 #Plot the prediction scores
 df <- data.frame(prediction)
 ggplot(df, aes(x= no_genes, y = Prediction , color = variable)) +
-  geom_point(aes(y=pred_DTC,col="DTC"))+
-  geom_point(aes(y=pred_knn,col="kNN"))+
-  geom_point(aes(y=pred_gssea,col="GSSEA"))
+  geom_point(aes(y=DTC,col="DTC"))+
+  geom_point(aes(y=kNN,col="kNN"))+
+  geom_point(aes(y=GSSEA,col="GSSEA"))
+
+##############################
+# Save prediction value of models
+##############################
+
+prediction
+
