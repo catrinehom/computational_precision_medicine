@@ -16,7 +16,7 @@ library(tidyverse)
 source(file = "Scripts/99_project_functions.R")
 
 ## Load count data
-lung_data <- read.delim("Data/_raw/TCGA-LUAD.htseq_fpkm.tsv.gz.tsv", row.names=1)
+lung_data <- read.delim("Data/_raw/TCGA-LUAD.htseq_fpkm.tsv", row.names=1)
 lung_data <- round((2^lung_data)-1, digits = 0)
 # Rename columns to fit pheno data
 colnames(lung_data) <- gsub(pattern = "\\.", replacement = "-", x = colnames(lung_data))
@@ -67,11 +67,8 @@ for (i in unique(lung_pheno$Expression_Subtype)) {
   signatures[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
 }
 
-# Define train and test for 2 fold cross validation
-#lung_data <- lung_data[subset]
-#val_lung_data <- lung_data[-subset]
-#lung_pheno <- lung_pheno[subset]
-#val_lung_pheno <- lung_pheno[subset]
+# Rank count data
+lung_data <- apply(lung_data, 2, rank)
 
 # Find best number of genes in the signature
 for (u in no_genes){

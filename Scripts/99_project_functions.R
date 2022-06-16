@@ -9,11 +9,13 @@ row_mww <- function(x) {
   res <- wilcox.test(subtype, rest)
   return(res$p.value)
 }
-# Make a function to calculate log2 fc
+# Make a function to calculate ranked patient median row
 row_fc <- function(x) {
   subtype <- x[lung_pheno$Expression_Subtype == i]
+  subtype <- rank(subtype)
   rest <- x[!lung_pheno$Expression_Subtype == i]
-  res <- log2(median(subtype)/median(rest))
+  rest <- rank(rest)
+  res <- median(subtype)/median(rest)
   return(res)
 }
 
