@@ -43,3 +43,13 @@ map(names(plots),
                     plots, .x)) 
 
 remove(plots)
+
+# PCA plots
+pca <- prcomp(t(lung_data), scale=TRUE)
+df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+df$condition <- lung_pheno$Expression_Subtype
+
+png(file="/Results/plots/PCA_lung_data",)
+ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
+  geom_point()
+dev.off()
