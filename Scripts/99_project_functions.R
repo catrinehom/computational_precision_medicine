@@ -14,7 +14,7 @@ row_fc <- function(x) {
   x <- rank(x)
   subtype <- x[lung_pheno$Expression_Subtype == i]
   rest <- x[!lung_pheno$Expression_Subtype == i]
-  res <- log2(median(subtype)/median(rest))
+  res <- median(subtype)-median(rest)
   return(res)
 }
 

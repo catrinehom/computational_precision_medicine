@@ -216,7 +216,7 @@ colnames(prediction) <- c("#genes","DTC","kNN","GSSEA")
 
 #Plot the prediction scores
 df <- data.frame(prediction)
-ggplot(df, aes(x= no_genes, y = Prediction , color = variable)) +
+ggplot(df, aes(x= no_genes, y = Prediction , color = model)) +
   geom_point(aes(y=DTC,col="DTC"))+
   geom_point(aes(y=kNN,col="kNN"))+
   geom_point(aes(y=GSSEA,col="GSSEA"))
