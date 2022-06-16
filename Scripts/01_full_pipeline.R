@@ -15,9 +15,11 @@ library(readr)
 source(file = "Scripts/99_project_functions.R")
 
 ## Load count data
-lung_data <- read.delim("Data/_raw/HiSeqV2-2", row.names=1)
+lung_data <- read.delim("~/Documents/computational_precision_medicine/Data/_raw/TCGA-LUAD.htseq_fpkm.tsv.gz.tsv", row.names=1)
+#lung_data <- round((2^lung_data)-1, digits = 0)
 # Rename columns to fit pheno data
 colnames(lung_data) <- gsub(pattern = "\\.", replacement = "-", x = colnames(lung_data))
+colnames(lung_data) <- gsub(pattern = ".$", replacement = "", x = colnames(lung_data))
 
 #load pheno data
 pheno <- read.delim("Data/_raw/TCGA.LUAD.sampleMap-LUAD_clinicalMatrix",row.names=1)
