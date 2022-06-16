@@ -225,5 +225,5 @@ ggplot(df, aes(x= no_genes, y = Prediction , color = variable)) +
 # Save prediction value of models
 ##############################
 
-prediction
+save(prediction, file="Results/prediction.Rdata")
 
