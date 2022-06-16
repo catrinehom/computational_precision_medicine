@@ -11,7 +11,6 @@ lung_pheno <- read_tsv(file = "data/01_lung_pheno.tsv",
                           show_col_types = FALSE)
 lung_data <- read_tsv(file = "data/01_lung_data.tsv",
                        show_col_types = FALSE)
-
 # Check for NAs --------------------------------------------------------
 NAs_pheno <- na_count(lung_pheno) 
 #Finds a few NAs
