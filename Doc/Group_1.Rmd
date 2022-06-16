@@ -1,0 +1,76 @@
+---
+title: "Lung adenocarcinoma"
+author: "Catrine Høm, Julie Zimmermann, Oriade Simpson and Paolo Federico"
+date: '2022-06-10'
+output:
+  ioslides_presentation:
+    widescreen: true
+    incremental: false
+    logo: DTU_logo.png
+    css: styles.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Few points on lung adenocarcinoma
+
+-Why is it important? 
+Global leading cause of cancer death (1M deaths/year)
+
+-Treatments? 
+Molecular therapies if some driver genes are involved, otherwise chemotherapy
+
+-Are the genomic dynamics complex?
+Yes. Some frequent driver genes, but high rate of somatic mutation and genomic rearrangement
+
+## Which transcriptional subtypes have been identified?
+
+-Bronchioid: majority of the EGFR-mutated tumours and kinase fusion expressing tumours. Prognostically favorable
+
+-Squamoid: solid histopathology. co-mutation of NF1 and TP53  
+
+-Magnoid: enriched for mutation of KRAS,
+along with inactivation of the STK11 tumour suppressor gene
+ 
+-Other differences: mutation rates, transition frequencies, genomic ploidy profiles, patterns of large-scale aberration, association
+with smoking history
+
+## Alteration in key pathways
+-RTK/RAS/RAF pathway activation (76% of cases)
+
+-PI(3)K-mTOR pathway activation (25%)
+
+-p53 pathway alteration (63%)
+
+-Alteration of cell cycle regulators (64%)
+
+-Alteration of oxidative stress pathways (22%)
+
+-Mutation of various chromatin and RNA splicing factors (49%)
+
+-Many tumours lack an obvious underlying genomic alteration to explain their apparent mTOR activation.
+
+## Which data are we using ?
+
+The cohort that has been selected for analysis is the **TCGA Lung Adenocarcinoma (LUAD)** gene expression RNASeq data and Phenotype data.
+
+These datasets were sourced from the University of California Santa Cruz DATASETS on the xenabrowser.net webpage.  
+
+The RNASeq gene expression data contain 576 samples and 20,531 genes. 
+
+The phenotype data contain 706 samples and 148 identifiers. 
+
+The expression subtypes in the phenotype data are:
+
+* Magnoid
+
+* Squamoid 
+
+* & Bronchioid
+
+## How are we going to do that?
+
+Use machine learning methods such as K-Nearest Neighbours to find some clusters 
+Compare different classification methods such as support vector machine and ..
