@@ -18,7 +18,6 @@ source(file = "Scripts/99_project_functions.R")
 lung_data <- read.delim("Data/_raw/HiSeqV2-2", row.names=1)
 # Rename columns to fit pheno data
 colnames(lung_data) <- gsub(pattern = "\\.", replacement = "-", x = colnames(lung_data))
-colnames(raw) <- gsub(pattern = "\\.", replacement = "-", x = colnames(raw))
 
 #load pheno data
 pheno <- read.delim("Data/_raw/TCGA.LUAD.sampleMap-LUAD_clinicalMatrix",row.names=1)
@@ -55,7 +54,7 @@ pred_knn <- integer(length(no_genes))
 # Define empty gene signature list
 signatures <- list()
 
-# Run the comparisons for each subtype
+# Run the comparisons for each subtype for upregulated
 for (i in unique(lung_pheno$Expression_Subtype)) {
   pvals <- apply(lung_data, 1, FUN = row_mww)
   padj <- p.adjust(pvals, method = "BY")
@@ -65,17 +64,22 @@ for (i in unique(lung_pheno$Expression_Subtype)) {
   signatures[[i]] <- names(log2fc[order(log2fc, decreasing = TRUE)])
 }
 
+# Define train and test for 2 fold cross validation
+#lung_data <- lung_data[subset]
+#val_lung_data <- lung_data[-subset]
+#lung_pheno <- lung_pheno[subset]
+#val_lung_pheno <- lung_pheno[subset]
+
 # Find best number of genes in the signature
 for (u in no_genes){
-  signatures_up<- signatures 
-  signatures_up[["Bronchioid"]] <- signatures_up[["Bronchioid"]][1:u]
-  signatures_up[["Magnoid"]] <- signatures_up[["Magnoid"]][1:u]
-  signatures_up[["Squamoid"]] <- signatures_up[["Squamoid"]][1:u]
+  signatures[["Bronchioid"]] <- signatures[["Bronchioid"]][1:u]
+  signatures[["Magnoid"]] <- signatures[["Magnoid"]][1:u]
+  signatures[["Squamoid"]] <- signatures[["Squamoid"]][1:u]
   
   print(cat("Now calcalated number of genes: ", u))
   
   #Define subgenes (across all subtypes) and subset the full dataset
-  sub_genes <- unname(unlist(signatures_up))
+  sub_genes <- unname(unlist(signatures))
   lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
   
   ##############################
@@ -86,7 +90,7 @@ for (u in no_genes){
   # SSGEA
   ###############
   # Find score for each signature in each sample
-  enrichment <- gsva(lung_data,signatures_up,method = "ssgsea", ssgsea.norm = FALSE)
+  enrichment <- gsva(lung_data_sub,signatures,method = "ssgsea", ssgsea.norm = FALSE)
   # Find the highest signature score for each sample
   enrichment_subtypes <- rownames(enrichment)[apply(enrichment, 2, which.max)]
   
