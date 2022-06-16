@@ -11,11 +11,10 @@ row_mww <- function(x) {
 }
 # Make a function to calculate ranked patient median row
 row_fc <- function(x) {
+  x <- rank(x)
   subtype <- x[lung_pheno$Expression_Subtype == i]
-  subtype <- rank(subtype)
   rest <- x[!lung_pheno$Expression_Subtype == i]
-  rest <- rank(rest)
-  res <- median(subtype)/median(rest)
+  res <- log2(median(subtype)/median(rest))
   return(res)
 }
 
