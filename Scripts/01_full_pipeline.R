@@ -57,7 +57,9 @@ df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
 df$condition <- lung_pheno$Expression_Subtype
 
 ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
-  geom_point()
+  geom_point(size = 3, alpha = 1)
+
+ggsave("Results/plots/PCA_full.png")
 
 # We can see 8 patient being weird
 pca <- prcomp(t(lung_data_remove_outliers), scale=TRUE)
@@ -65,7 +67,9 @@ df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
 df$condition <- lung_pheno_remove_outliers$Expression_Subtype
 
 ggplot(df, aes(x = PC1, y = PC2,color=condition)) +
-  geom_point()
+  geom_point(size = 3, alpha = 1)
+
+ggsave("Results/plots/PCA_outlier_removal.png")
 
 
 lung_data <- lung_data_remove_outliers
@@ -77,7 +81,7 @@ lung_pheno <- lung_pheno_remove_outliers
 ##############################
 # Define how many number of genes to test
 interval <- 2
-no_genes <- seq(2,20,by=interval)
+no_genes <- seq(2,1000,by=interval)
 
 # Define empty pred vectors
 pred_gssea <- integer(length(no_genes))
@@ -221,9 +225,139 @@ ggplot(df, aes(x= no_genes, y = Prediction , color = model)) +
   geom_point(aes(y=kNN,col="kNN"))+
   geom_point(aes(y=GSSEA,col="GSSEA"))
 
+ggsave("Results/plots/01_model_predictions.png")
+
 ##############################
 # Save prediction value of models
 ##############################
 
 save(prediction, file="Results/prediction.Rdata")
+
+
+#DTC: 0.8218182, 2000
+#KNN:  0.8254545, 200
+#SSGSEA:  0.7454545, 168
+
+##############################
+# Run confusion matrix on top results
+##############################
+
+###############
+# SSGEA
+###############
+u = 168/2
+signatures_up <- signatures_all_up
+signatures_up[["Bronchioid"]] <- signatures_all_up[["Bronchioid"]][1:u]
+signatures_up[["Magnoid"]] <- signatures_all_up[["Magnoid"]][1:u]
+signatures_up[["Squamoid"]] <- signatures_all_up[["Squamoid"]][1:u]
+
+signatures_down <- signatures_all_down
+signatures_down[["Bronchioid"]] <- signatures_all_down[["Bronchioid"]][1:u]
+signatures_down[["Magnoid"]] <- signatures_all_down[["Magnoid"]][1:u]
+signatures_down[["Squamoid"]] <- signatures_all_down[["Squamoid"]][1:u]
+
+# Find score for each up signature in each sample
+enrichment <- gsva(lung_data,signatures_up,method = "ssgsea", ssgsea.norm = FALSE)
+# Find score for each down signature in each sample
+detraction <- gsva(lung_data,signatures_down,method = "ssgsea", ssgsea.norm = FALSE)
+detraction <- detraction *-1
+
+total <- enrichment + detraction
+
+# Find the highest signature score for each sample
+enrichment_subtypes <- rownames(total)[apply(total, 2, which.max)]
+
+# answer_dtc is for all samples for a specific u
+answer_gssea <- table(lung_pheno$Expression_Subtype == rownames(enrichment)[apply(enrichment, 2, which.max)])
+
+confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
+colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+rownames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+
+for(i in 1:length(enrichment_subtypes)) {
+confusionmatrix[enrichment_subtypes[i],lung_pheno$Expression_Subtype[i]] <-confusionmatrix[enrichment_subtypes[i],lung_pheno$Expression_Subtype[i]] +1 
+}
+
+precition_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/rowSums(confusionmatrix)[1]
+precition_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/rowSums(confusionmatrix)[2]
+precition_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/rowSums(confusionmatrix)[3]
+
+recall_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/colSums(confusionmatrix)[1]
+recall_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/colSums(confusionmatrix)[2]
+recall_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/colSums(confusionmatrix)[3]
+
+cbind(precition_Bronchioid,precition_Magnoid,precition_Squamoid)
+cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
+
+###############
+# KNN
+###############
+u = 200/2
+signatures_up <- signatures_all_up
+signatures_up[["Bronchioid"]] <- signatures_all_up[["Bronchioid"]][1:u]
+signatures_up[["Magnoid"]] <- signatures_all_up[["Magnoid"]][1:u]
+signatures_up[["Squamoid"]] <- signatures_all_up[["Squamoid"]][1:u]
+
+signatures_down <- signatures_all_down
+signatures_down[["Bronchioid"]] <- signatures_all_down[["Bronchioid"]][1:u]
+signatures_down[["Magnoid"]] <- signatures_all_down[["Magnoid"]][1:u]
+signatures_down[["Squamoid"]] <- signatures_all_down[["Squamoid"]][1:u]
+
+sub_genes <- unname(c(unlist(signatures_up),unlist(signatures_down)))
+lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
+
+confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
+colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+rownames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+
+answer_knn = integer(ncol(lung_data_sub))
+for(i in 1:ncol(lung_data_sub)){
+  test_knn <- subset(lung_data_sub, select = c(i)) 
+  train_knn <- subset(lung_data_sub, select = -c(i)) 
+  
+  cl <- subset(t(lung_pheno$Expression_Subtype), select = -c(i)) 
+  cl <- factor(t(cl))
+  train_knn <- t(train_knn)
+  test_knn <- t(test_knn)
+  
+  subtype_knn <- as.character(knn(train_knn, test_knn, cl, k = 17, prob=TRUE))
+  answer_knn[i] = subtype_knn == t(lung_pheno$Expression_Subtype[i])
+  
+  confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] +1 
+  
+  
+}
+
+precition_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/rowSums(confusionmatrix)[1]
+precition_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/rowSums(confusionmatrix)[2]
+precition_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/rowSums(confusionmatrix)[3]
+
+recall_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/colSums(confusionmatrix)[1]
+recall_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/colSums(confusionmatrix)[2]
+recall_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/colSums(confusionmatrix)[3]
+
+cbind(precition_Bronchioid,precition_Magnoid,precition_Squamoid)
+cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
+
+###############
+# DTC
+###############
+u = 2000/2
+signatures_up <- signatures_all_up
+signatures_up[["Bronchioid"]] <- signatures_all_up[["Bronchioid"]][1:u]
+signatures_up[["Magnoid"]] <- signatures_all_up[["Magnoid"]][1:u]
+signatures_up[["Squamoid"]] <- signatures_all_up[["Squamoid"]][1:u]
+
+signatures_down <- signatures_all_down
+signatures_down[["Bronchioid"]] <- signatures_all_down[["Bronchioid"]][1:u]
+signatures_down[["Magnoid"]] <- signatures_all_down[["Magnoid"]][1:u]
+signatures_down[["Squamoid"]] <- signatures_all_down[["Squamoid"]][1:u]
+
+sub_genes <- unname(c(unlist(signatures_up),unlist(signatures_down)))
+lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
+
+confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
+colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+rownames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
+#confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] +1 
 
