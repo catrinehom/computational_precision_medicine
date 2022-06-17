@@ -2,6 +2,7 @@ library(tidyverse)
 library(dplyr)
 library(purrr)
 library(ggplot2)
+library(readr)
 
 # Load functions
 source(file = "Scripts/99_project_functions.R")

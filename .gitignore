@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # For mac users
 .DS_Store
+
+#Raw data is too big to upload
+Data/_raw/*
