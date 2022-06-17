@@ -74,3 +74,23 @@ The expression subtypes in the phenotype data are:
 
 Use machine learning methods such as K-Nearest Neighbours to find some clusters 
 Compare different classification methods such as support vector machine and ..
+
+## Flow Chart of pipeline
+knitr::include_graphics("supplementary_figs/02.2.classes.png")
+
+## Statistics of data
+knitr::include_graphics("supplementary_figs/02.2.classes.png")
+
+## Outlier detection
+Are any patients looking weird?
+knitr::include_graphics("supplementary_figs/02.2.classes.png")
+
+## Outlier detection
+Remove 8 outlier patients
+knitr::include_graphics("Results/plots/model_predictions.png")
+
+## Optimation result
+
+## Other results?
+
+## Other results?
