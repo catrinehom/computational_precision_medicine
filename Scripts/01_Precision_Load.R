@@ -17,6 +17,11 @@
 # * The associated Phenotype Data: TCGA-LUAD.GDC_phenotype.tsv.gz
 # * The FPKM Data: TCGA-LUAD.htseq_fpkm.ts
 
+# NOTE: Download this data from :
+# GDC TCGA Lung Adenocarcinoma (LUAD) > Cohort > RNA Seq Section found @
+# https://xenabrowser.net
+
+
 # Instructions  -------------------------------------------------------------
 # Collapse data to a single file or convert  to .tsv
 
