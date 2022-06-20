@@ -54,20 +54,22 @@ write_tsv(x = as_tibble(lung_data),
 
 pca <- prcomp(t(lung_data), scale=TRUE)
 df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
-df$condition <- lung_pheno$Expression_Subtype
+df$Subtype <- lung_pheno$Expression_Subtype
 
-ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
-  geom_point(size = 3, alpha = 1)
+ggplot(df, aes(x = PC1, y = PC2, color=Subtype)) +
+  geom_point(size = 3, alpha = 1) + 
+  theme(text = element_text(size = 20)) 
 
 ggsave("Results/plots/PCA_full.png")
 
 # We can see 8 patient being weird
 pca <- prcomp(t(lung_data_remove_outliers), scale=TRUE)
 df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
-df$condition <- lung_pheno_remove_outliers$Expression_Subtype
+df$Subtype <- lung_pheno_remove_outliers$Expression_Subtype
 
-ggplot(df, aes(x = PC1, y = PC2,color=condition)) +
-  geom_point(size = 3, alpha = 1)
+ggplot(df, aes(x = PC1, y = PC2,color=Subtype)) +
+  geom_point(size = 3, alpha = 1) +
+  theme(text = element_text(size = 20)) 
 
 ggsave("Results/plots/PCA_outlier_removal.png")
 
@@ -220,10 +222,13 @@ colnames(prediction) <- c("#genes","DTC","kNN","GSSEA")
 
 #Plot the prediction scores
 df <- data.frame(prediction)
-ggplot(df, aes(x= no_genes, y = Prediction , color = model)) +
+ggplot(df, aes(x= no_genes, y = Prediction , color = Model)) +
   geom_point(aes(y=DTC,col="DTC"))+
   geom_point(aes(y=kNN,col="kNN"))+
-  geom_point(aes(y=GSSEA,col="GSSEA"))
+  geom_point(aes(y=GSSEA,col="GSSEA")) +
+  theme(text = element_text(size = 20)) +
+  xlab("Number of genes in signature") + ylab("Prediction score")
+  
 
 ggsave("Results/plots/01_model_predictions.png")
 
@@ -303,8 +308,13 @@ signatures_down[["Bronchioid"]] <- signatures_all_down[["Bronchioid"]][1:u]
 signatures_down[["Magnoid"]] <- signatures_all_down[["Magnoid"]][1:u]
 signatures_down[["Squamoid"]] <- signatures_all_down[["Squamoid"]][1:u]
 
+save(signatures_down, file="Results/signatures_down.Rdata")
+save(signatures_down, file="Results/signatures_up.Rdata")
+
 sub_genes <- unname(c(unlist(signatures_up),unlist(signatures_down)))
 lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
+
+save(lung_data_sub, file="Results/lung_data_sub.Rdata")
 
 confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
 colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
@@ -324,8 +334,6 @@ for(i in 1:ncol(lung_data_sub)){
   answer_knn[i] = subtype_knn == t(lung_pheno$Expression_Subtype[i])
   
   confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] +1 
-  
-  
 }
 
 precition_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/rowSums(confusionmatrix)[1]
@@ -338,6 +346,24 @@ recall_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/colSums(confusionmatri
 
 cbind(precition_Bronchioid,precition_Magnoid,precition_Squamoid)
 cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
+
+
+# Plot subset 
+pca <- prcomp(t(lung_data_sub), scale=TRUE)
+df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+df$condition <- lung_pheno$Expression_Subtype
+
+ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
+  geom_point(size = 3, alpha = 1)
+
+# plot subset unranked
+lung_data_sub_unranked <- lung_data_unranked[rownames(lung_data_unranked) %in% sub_genes, ]
+pca <- prcomp(t(lung_data_sub_unranked), scale=TRUE)
+df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
+df$condition <- lung_pheno$Expression_Subtype
+
+ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
+  geom_point(size = 3, alpha = 1)
 
 ###############
 # DTC
@@ -359,5 +385,52 @@ lung_data_sub <- lung_data[rownames(lung_data) %in% sub_genes, ]
 confusionmatrix <- cbind(c(0,0,0),c(0,0,0),c(0,0,0))
 colnames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
 rownames(confusionmatrix) <- c("Bronchioid","Magnoid","Squamoid")
-#confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[subtype_knn,lung_pheno$Expression_Subtype[i]] +1 
 
+
+# answer_dtc is for all samples for a specific u
+answer_dtc <- c()
+# loop over samples (columns)
+for(i in 1:ncol(lung_data_sub)) {
+  # make a training matrix consisting of all samples but the one you leave out
+  training <- lung_data_sub[,-i]
+  # remove that samples class from the class vector
+  training_classes <- lung_pheno$Expression_Subtype[-i]
+  # make a test vector consisting of only that sample
+  test <- lung_data_sub[,i]
+  # get the class of that sample
+  test_class <- lung_pheno$Expression_Subtype[i]
+  
+  # make an empty centroid matrix
+  centroids <- NULL
+  # loop over each of the three classes
+  for (class in unique(lung_pheno$Expression_Subtype)) {
+    # for each of these classes, subset the training matrix to samples belonging to that class, and calculate the mean expression of each gene in the class
+    class_centroid <- rowMeans(training[,training_classes==class])
+    # add the mean vector to the centroids matrix
+    centroids <- cbind(centroids, class_centroid)
+  }
+  # add colnames to the centroid matrix
+  colnames(centroids) <- unique(lung_pheno$Expression_Subtype)
+  # calculate the distance of the test sample to the centroids
+  d <- as.matrix(dist(t(cbind(centroids, test)),method="canberra"))
+  # assign the class of the closest centroid
+  class_pred <- names(which.min(d[1:3,4]))
+  # check if you got it right and make a logical vector
+  answer_dtc <- c(answer_dtc, test_class==class_pred)
+  
+  confusionmatrix[class_pred,lung_pheno$Expression_Subtype[i]] <-confusionmatrix[class_pred,lung_pheno$Expression_Subtype[i]] +1 
+  
+  
+}
+
+
+precition_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/rowSums(confusionmatrix)[1]
+precition_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/rowSums(confusionmatrix)[2]
+precition_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/rowSums(confusionmatrix)[3]
+
+recall_Bronchioid <- confusionmatrix["Bronchioid","Bronchioid"]/colSums(confusionmatrix)[1]
+recall_Magnoid <- confusionmatrix["Magnoid","Magnoid"]/colSums(confusionmatrix)[2]
+recall_Squamoid <- confusionmatrix["Squamoid","Squamoid"]/colSums(confusionmatrix)[3]
+
+cbind(precition_Bronchioid,precition_Magnoid,precition_Squamoid)
+cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
