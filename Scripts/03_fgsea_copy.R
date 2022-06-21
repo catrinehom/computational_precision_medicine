@@ -96,9 +96,47 @@ universe <- AnnotationDbi::select(hs,
                                   keys = universe$genes,
                                   columns = c("ENTREZID"),
                                   keytype = "ENSEMBL")
-# remove(hs)
 
-#Omit NAs
+# Check symbols---------------------------------------------------------
+# magnoid_down <- AnnotationDbi::select(hs, 
+#                                       keys = magnoid_down$ENSEMBL,
+#                                       columns = c("SYMBOL"),
+#                                       keytype = "ENSEMBL")
+# 
+# squamoid_down <- AnnotationDbi::select(hs,
+#                                        keys = squamoid_down$ENSEMBL,
+#                                        columns = c("SYMBOL"),
+#                                        keytype = "ENSEMBL")
+# 
+# bronchioid_down <- AnnotationDbi::select(hs,
+#                                          keys = bronchioid_down$ENSEMBL,
+#                                          columns = c("SYMBOL"),
+#                                          keytype = "ENSEMBL")
+# 
+# magnoid_up <- AnnotationDbi::select(hs, 
+#                                     keys = magnoid_up$ENSEMBL,
+#                                     columns = c("SYMBOL"),
+#                                     keytype = "ENSEMBL")
+# 
+# squamoid_up <- AnnotationDbi::select(hs,
+#                                      keys = squamoid_up$ENSEMBL,
+#                                      columns = c("SYMBOL"),
+#                                      keytype = "ENSEMBL")
+# 
+# bronchioid_up <- AnnotationDbi::select(hs,
+#                                        keys = bronchioid_up$ENSEMBL,
+#                                        columns = c("SYMBOL"),
+#                                        keytype = "ENSEMBL")
+# 
+# universe <- AnnotationDbi::select(hs,
+#                                   keys = universe$ENSEMBL,
+#                                   columns = c("SYMBOL"),
+#                                   keytype = "ENSEMBL")
+
+
+remove(hs)
+
+#Omit NAs----------------------------------------------------------------------
 magnoid_down <- na.omit(magnoid_down)
 squamoid_down <- na.omit(squamoid_down)
 bronchioid_down <- na.omit(bronchioid_down)
@@ -140,6 +178,7 @@ bronchioid_upRes <- bronchioid_upRes %>%
 
 save(magnoid_downRes, squamoid_downRes, bronchioid_downRes, magnoid_upRes, squamoid_upRes, bronchioid_upRes, file = "Results/03copy_pathway_enrichment.Rdata")
 
+#Check genes in a pathway--------------------------------------------
 # path1genes <- as_tibble(bronchioid_downRes$overlapGenes[[1]])
 # 
 # path1genes <- path1genes %>% 
