@@ -58,7 +58,8 @@ df$Subtype <- lung_pheno$Expression_Subtype
 
 ggplot(df, aes(x = PC1, y = PC2, color=Subtype)) +
   geom_point(size = 3, alpha = 1) + 
-  theme(text = element_text(size = 20)) 
+  theme(text = element_text(size = 20)) +
+  xlab("PC1 (24.28%)") + ylab("PC2 (4.83%)")
 
 ggsave("Results/plots/PCA_full.png")
 
@@ -69,7 +70,8 @@ df$Subtype <- lung_pheno_remove_outliers$Expression_Subtype
 
 ggplot(df, aes(x = PC1, y = PC2,color=Subtype)) +
   geom_point(size = 3, alpha = 1) +
-  theme(text = element_text(size = 20)) 
+  theme(text = element_text(size = 20)) +
+  xlab("PC1 (5.81%)") + ylab("PC2 (5.40%)")
 
 ggsave("Results/plots/PCA_outlier_removal.png")
 
@@ -225,7 +227,7 @@ df <- data.frame(prediction)
 ggplot(df, aes(x= no_genes, y = Prediction , color = Model)) +
   geom_point(aes(y=DTC,col="DTC"))+
   geom_point(aes(y=kNN,col="kNN"))+
-  geom_point(aes(y=GSSEA,col="GSSEA")) +
+  geom_point(aes(y=GSSEA,col="ssGSEA")) +
   theme(text = element_text(size = 20)) +
   xlab("Number of genes in signature") + ylab("Prediction score")
   
@@ -351,10 +353,15 @@ cbind(recall_Bronchioid,recall_Magnoid,recall_Squamoid)
 # Plot subset 
 pca <- prcomp(t(lung_data_sub), scale=TRUE)
 df <- data.frame(PC1 = pca$x[,1], PC2 = pca$x[,2])
-df$condition <- lung_pheno$Expression_Subtype
+df$Subtype <- lung_pheno$Expression_Subtype
 
-ggplot(df, aes(x = PC1, y = PC2, color=condition)) +
-  geom_point(size = 3, alpha = 1)
+ggplot(df, aes(x = PC1, y = PC2, color=Subtype)) +
+  geom_point(size = 3, alpha = 1) +
+  theme(text = element_text(size = 20)) +
+  xlab("PC1 (18.39%)") + ylab("PC2 (10.08%)")
+
+
+ggsave("Results/plots/PCA_subset.png")
 
 # plot subset unranked
 lung_data_sub_unranked <- lung_data_unranked[rownames(lung_data_unranked) %in% sub_genes, ]
