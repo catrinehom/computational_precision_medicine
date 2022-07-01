@@ -1,4 +1,4 @@
-2022\_group01: Optimizing models for subtype prediction in Lung Adenocarcinoma
+Optimizing models for subtype prediction in Lung Adenocarcinoma
 ====================
 
 Description
