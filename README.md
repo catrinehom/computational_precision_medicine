@@ -1,33 +1,36 @@
-2022\_group01: PROJECT NAME
+2022\_group01: Optimizing models for subtype prediction in Lung Adenocarcinoma
 ====================
-
-![](./doc/supplementary_figs/00.readme_banner.png)
-
 
 Description
 --------------------
 
-This is a project on 
+This is a project on optimizing models for subtype prediction in Lung Adenocarcinoma
+
+This has been done by: 
+
+- Varying the number of genes in the subtype signature
+
+- Using three different models: 
+* K Nearest Neighbors (KNN) (where K=17)
+* Distance-To-Centroid (DTC)
+* single sample Gene Set Enrichment Analysis (ssGSEA)
+
 
 Data
 --------------------
 
 
-The data contains X tables: 
-- Table 1
-- Table X
-
-The data is available in this repository under */data/\_raw*. 
+The data contains 2 tables: 
+- FPKM data set
+- Clinical data set
 
 The data was originally found on XXX:
-
-
 
 Dependencies
 --------------------
 - [R](https://cran.r-project.org/bin/windows/base/) >= 3.6.3, including packages:
   * tidyverse
-  * Melanoma
+  * GSVA
 
 
 Installation
@@ -38,12 +41,8 @@ The following code download this data analysis pipeline, when run in the termina
 git clone https://github.com/catrinehom/computational_precision_medicine.git
 ```
 
-Usage
---------------------
 
-This is how you use the code
-
-Group members
+Contributors
 --------------------
 
 * Catrine Høm (catrinehom)
